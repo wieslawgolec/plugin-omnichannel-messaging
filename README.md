@@ -220,12 +220,3 @@ If this plugin saves you time:
 
 GPL-3.0-or-later (same family as Mautic).
 
-
-## Production readiness (v1.2.0)
-
-- Doctrine `loadMetadata()` on all entities (ClassMetadataBuilder)
-- Repositories extend `CommonRepository`
-- Models inject repositories; in-memory fallback only for unit tests
-- Schema migration: `Migrations/Version20261019120000.php`
-- Permissions: `omnichannel:templates|conversations|config|messages` (standard CRUD)
-- Twig views under `Resources/views/` using `@MauticCore` layout
