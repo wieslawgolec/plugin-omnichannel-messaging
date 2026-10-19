@@ -8,11 +8,13 @@ Turns WhatsApp, Telegram, WeCom, WeChat Official Account and Discord into proper
 - Automatic free-form ↔ template fallback
 - Inbound webhook parsing
 - Campaign action (“Send Omnichannel Message”)
+- Template CRUD + conversation timeline
+- Per-channel credential configuration
 - Extensible channel registry
 
 |  |  |
 | --- | --- |
-| **Version** | 1.0.0 |
+| **Version** | 1.2.0 |
 | **PHP** | 8.2+ (CI: 8.2, 8.5, 8.6) |
 | **Mautic** | 7.2+ |
 | **License** | GPL-3.0-or-later |
@@ -24,27 +26,28 @@ Turns WhatsApp, Telegram, WeCom, WeChat Official Account and Discord into proper
 1. [Capability matrix](#capability-matrix)
 2. [Install in Mautic](#install-in-mautic)
 3. [Architecture](#architecture)
-4. [Campaign action](#campaign-action)
-5. [Session windows](#session-windows)
-6. [Inbound webhooks](#inbound-webhooks)
-7. [Development & tests](#development--tests)
-8. [Support the project](#support-the-project)
+4. [Entities & models](#entities--models)
+5. [UI](#ui)
+6. [Channel configuration](#channel-configuration)
+7. [Campaign action](#campaign-action)
+8. [Session windows](#session-windows)
+9. [Inbound webhooks](#inbound-webhooks)
+10. [Development & tests](#development--tests)
+11. [Support the project](#support-the-project)
 
 ---
 
 ## Capability matrix
 
-| Channel | Free-form | Templates | Window | Inbound | Media | Campaign |
-| --- | --- | --- | --- | --- | --- | --- |
-| **WhatsApp** (Cloud API) | ✓ (inside window) | ✓ | 24 h | ✓ | ✓ | ✓ |
-| **Telegram** | ✓ always | — | none | ✓ | ✓ | ✓ |
-| **WeCom** (企业微信) | ✓ always | — | none | ✓ | ✓ | ✓ |
-| **WeChat OA** | ✓ (inside window) | ✓ | 48 h | ✓ | ✓ | ✓ |
-| **Discord** | ✓ always | — | none | — | ✓ | ✓ |
+| Channel | Free-form | Templates | Window | Inbound | Media | Campaign | Config form |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| **WhatsApp** (Cloud API) | ✓ (inside window) | ✓ | 24 h | ✓ | ✓ | ✓ | ✓ |
+| **Telegram** | ✓ always | — | none | ✓ | ✓ | ✓ | ✓ |
+| **WeCom** (企业微信) | ✓ always | — | none | ✓ | ✓ | ✓ | ✓ |
+| **WeChat OA** | ✓ (inside window) | ✓ | 48 h | ✓ | ✓ | ✓ | ✓ |
+| **Discord** | ✓ always | — | none | — | ✓ | ✓ | ✓ |
 
-This plugin is complementary to [plugin-social](https://github.com/wieslawgolec/plugin-social).  
-Social focuses on **broadcast / social publishing**.  
-Omnichannel Messaging focuses on **conversational messaging** (windows, templates, inbound, conversation timeline).
+Complementary to [plugin-social](https://github.com/wieslawgolec/plugin-social): Social = broadcast / publishing; Omnichannel = conversational messaging.
 
 ---
 
@@ -54,25 +57,20 @@ Omnichannel Messaging focuses on **conversational messaging** (windows, template
 
 * Mautic **7.2+**
 * PHP **8.2+** (8.5 / 8.6 supported)
-* `curl` extension recommended for live API calls
+* `curl` extension recommended
 
-### Option A — Clone into `plugins/`
+### Clone
 
 ```bash
 cd /path/to/mautic
 git clone https://github.com/wieslawgolec/plugin-omnichannel-messaging.git plugins/MauticOmnichannelMessagingBundle
-```
-
-The directory name **must** be `MauticOmnichannelMessagingBundle`.
-
-### Enable
-
-```bash
 php bin/console cache:clear
 php bin/console mautic:plugins:reload
 ```
 
-Then open **Settings → Plugins** and publish **Omnichannel Messaging**.
+Directory name **must** be `MauticOmnichannelMessagingBundle`.
+
+Then **Settings → Plugins → Omnichannel Messaging** → publish, and configure each channel under **Channels → Omnichannel Config**.
 
 ---
 
@@ -80,28 +78,79 @@ Then open **Settings → Plugins** and publish **Omnichannel Messaging**.
 
 ```
 plugins/MauticOmnichannelMessagingBundle/
-├── Helper/
-│   ├── ChannelInterface.php          # Contract every channel implements
-│   ├── AbstractChannelHelper.php     # Shared HTTP + phone helpers
-│   ├── WhatsAppChannelHelper.php
-│   ├── TelegramChannelHelper.php
-│   ├── WeComChannelHelper.php
-│   ├── WeChatChannelHelper.php
-│   ├── DiscordChannelHelper.php
-│   ├── ChannelRegistry.php           # Discovers all channels
-│   ├── WindowManager.php             # 24 h / 48 h session logic
-│   └── MessageSender.php             # High-level facade (window → text|template)
-├── EventListener/CampaignSubscriber.php
-├── Form/Type/OmnichannelSendType.php
-├── Controller/ (Webhook, Template, Conversation stubs)
-└── Tests/Unit/                       # 44 PHPUnit tests
+├── Entity/
+│   ├── MessageTemplate.php      # Approved / draft templates
+│   ├── Conversation.php         # Thread + session window state
+│   └── MessageLog.php           # Inbound / outbound message history
+├── Model/
+│   ├── TemplateModel.php
+│   └── ConversationModel.php    # findOrCreate, recordInbound/Outbound
+├── Helper/                      # Channel drivers + WindowManager + MessageSender
+├── Integration/
+│   └── OmnichannelIntegration.php  # Per-channel credentials
+├── Controller/
+│   ├── TemplateController.php      # Full CRUD UI
+│   ├── ConversationController.php  # List + timeline
+│   ├── ConfigController.php        # Credential forms
+│   └── WebhookController.php
+├── Form/Type/
+│   ├── OmnichannelSendType.php
+│   ├── MessageTemplateType.php
+│   └── ChannelConfigType.php
+└── Tests/Unit/                  # 73 PHPUnit tests
 ```
 
-### Adding a new channel
+---
 
-1. Implement `ChannelInterface` (or extend `AbstractChannelHelper`)
-2. Register it in `ChannelRegistry::__construct()`
-3. Add unit tests
+## Entities & models
+
+### MessageTemplate
+- name, channel, language, category, status (`draft|pending|approved|rejected|disabled`)
+- body, parameters, externalId, isPublished
+- `canBeSent()` = approved + published
+
+### Conversation
+- leadId, channel, contactIdentifier, status
+- lastInboundAt / lastOutboundAt / windowExpiresAt
+- `openWindow($hours)` refreshes the session
+- `isWindowOpen()`
+
+### MessageLog
+- direction (`inbound|outbound`), status, body, externalMessageId
+- usedTemplate / templateName, media, errorMessage
+- `markSent()` / `markFailed()`
+
+Entities use Mautic `ClassMetadataBuilder` + `CommonRepository`. Models accept repository injection for production; unit tests use an in-memory fallback so CI stays kernel-free.
+
+---
+
+## UI
+
+| Route | Description |
+| --- | --- |
+| `/s/omnichannel/templates` | Template list + New / Edit / View / Delete |
+| `/s/omnichannel/conversations` | Conversation list |
+| `/s/omnichannel/conversations/view/{id}` | Timeline (inbound blue, outbound green) |
+| `/s/omnichannel/config` | Channel list |
+| `/s/omnichannel/config/{channel}` | Credential form for one channel |
+
+Menu entries appear under **Channels**.
+
+---
+
+## Channel configuration
+
+`OmnichannelIntegration` stores credentials per channel:
+
+| Channel | Key fields |
+| --- | --- |
+| WhatsApp | phone_number_id, access_token, verify_token, waba_id |
+| Telegram | bot_token, bot_username |
+| WeCom | corpid, corpsecret, agentid |
+| WeChat | appid, appsecret, token |
+| Discord | webhook_url, bot_token, default_channel_id |
+
+`getCredentialsForChannel()` strips the `enabled` flag and is what `MessageSender` consumes.
 
 ---
 
@@ -111,35 +160,27 @@ plugins/MauticOmnichannelMessagingBundle/
 
 | Field | Purpose |
 | --- | --- |
-| `channel` | `whatsapp` / `telegram` / `wecom` / `wechat` / `discord` |
-| `message` | Free-form body (tokens supported) |
-| `template_name` | Used automatically when the session window is closed |
-| `language` | Template language (default `en_US`) |
-| `to_override` | Optional override of the contact identifier |
+| channel | whatsapp / telegram / wecom / wechat / discord |
+| message | Free-form body (tokens supported) |
+| template_name | Used when the session window is closed |
+| language | Template language (default `en_US`) |
+| to_override | Optional recipient override |
 
-`MessageSender` decides at runtime:
-
-* Window open → free-form text
-* Window closed + channel supports templates → template (requires `template_name`)
-* Window closed + no template support → error
+`MessageSender` decides at runtime: window open → text; closed + templates supported → template; otherwise error.
 
 ---
 
 ## Session windows
 
-| Channel | Window | Behaviour outside window |
+| Channel | Window | Outside window |
 | --- | --- | --- |
-| WhatsApp | 24 h after last inbound | Only approved templates |
-| WeChat OA | 48 h after last inbound | Only approved templates |
-| Telegram / WeCom / Discord | none | Free-form always allowed |
-
-`WindowManager` is pure logic and fully unit-tested.
+| WhatsApp | 24 h after last inbound | Templates only |
+| WeChat OA | 48 h after last inbound | Templates only |
+| Telegram / WeCom / Discord | none | Free-form always |
 
 ---
 
 ## Inbound webhooks
-
-Public route:
 
 ```
 POST/GET /omnichannel/webhook/{channel}
@@ -147,23 +188,14 @@ POST/GET /omnichannel/webhook/{channel}
 
 Supported: `whatsapp`, `telegram`, `wecom`, `wechat`.
 
-WhatsApp also answers the Meta verification challenge (`hub.challenge`).
-
-Parsed payload yields:
-
-* `contact_identifier` (phone / chat_id / userid / openid)
-* `body`
-* `message_id`
-* optional `media`
-
-In a full installation the controller would resolve the Contact, open the session window, persist the message and dispatch `OmnichannelEvents::MESSAGE_INBOUND`.
+WhatsApp answers the Meta verification challenge. Parsed payload yields `contact_identifier`, `body`, `message_id`, optional `media`. The webhook controller is ready to call `ConversationModel::recordInbound()` once wired to Doctrine + contact resolution.
 
 ---
 
 ## Development & tests
 
 ```bash
-composer update --ignore-platform-reqs   # or use the PHPUnit 11.5 phar
+composer update --ignore-platform-reqs
 vendor/bin/phpunit --configuration phpunit.xml.dist
 # or
 php phpunit-11.5.phar --configuration phpunit.xml.dist
@@ -172,14 +204,14 @@ php phpunit-11.5.phar --configuration phpunit.xml.dist
 CI runs on every push against **PHP 8.2 / 8.5 / 8.6**.
 
 ```
-OK (44 tests, 131 assertions)
+OK (73 tests, 239 assertions)
 ```
 
 ---
 
 ## Support the project
 
-If this plugin saves you time, you can support development:
+If this plugin saves you time:
 
 * **GitHub Sponsors:** [github.com/sponsors/wieslawgolec](https://github.com/sponsors/wieslawgolec)
 * **Buy Me a Coffee:** [buymeacoffee.com/wieslawgolec](https://buymeacoffee.com/wieslawgolec)
@@ -187,3 +219,13 @@ If this plugin saves you time, you can support development:
 ## License
 
 GPL-3.0-or-later (same family as Mautic).
+
+
+## Production readiness (v1.2.0)
+
+- Doctrine `loadMetadata()` on all entities (ClassMetadataBuilder)
+- Repositories extend `CommonRepository`
+- Models inject repositories; in-memory fallback only for unit tests
+- Schema migration: `Migrations/Version20261019120000.php`
+- Permissions: `omnichannel:templates|conversations|config|messages` (standard CRUD)
+- Twig views under `Resources/views/` using `@MauticCore` layout

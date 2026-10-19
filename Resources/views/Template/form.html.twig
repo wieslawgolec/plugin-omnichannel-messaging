@@ -1,0 +1,35 @@
+{% extends '@MauticCore/Default/content.html.twig' %}
+
+{% block headerTitle %}
+  {% if entity.id %}
+    {% trans %}mautic.omnichannel.template.edit{% endtrans %}: {{ entity.name }}
+  {% else %}
+    {% trans %}mautic.omnichannel.template.new{% endtrans %}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  {{ form_start(form) }}
+  <div class="box-layout">
+    <div class="col-md-9 height-auto">
+      <div class="pa-md">
+        <div class="row">
+          <div class="col-md-6">{{ form_row(form.name) }}</div>
+          <div class="col-md-6">{{ form_row(form.channel) }}</div>
+        </div>
+        <div class="row">
+          <div class="col-md-4">{{ form_row(form.language) }}</div>
+          <div class="col-md-4">{{ form_row(form.category) }}</div>
+          <div class="col-md-4">{{ form_row(form.status) }}</div>
+        </div>
+        {{ form_row(form.body) }}
+      </div>
+    </div>
+    <div class="col-md-3 height-auto bdr-l">
+      <div class="pr-lg pl-lg pt-md pb-md">
+        {{ form_row(form.isPublished) }}
+      </div>
+    </div>
+  </div>
+  {{ form_end(form) }}
+{% endblock %}

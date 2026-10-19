@@ -1,0 +1,62 @@
+{% extends '@MauticCore/Default/content.html.twig' %}
+
+{% block headerTitle %}{% trans %}mautic.omnichannel.templates{% endtrans %}{% endblock %}
+
+{% block actions %}
+  {% include '@MauticCore/Helper/page_actions.html.twig' with {
+    'templateButtons': {
+      'new': permissions['omnichannel:templates:create']|default(false)
+    },
+    'routeBase': 'mautic_omnichannel_templates',
+    'langVar': 'omnichannel.template'
+  } %}
+{% endblock %}
+
+{% block content %}
+  {% if items is empty %}
+    {% include '@MauticCore/Helper/no_results.html.twig' %}
+  {% else %}
+    <div class="table-responsive panel-body">
+      <table class="table table-hover omnichannel-template-list">
+        <thead>
+          <tr>
+            <th>{% trans %}mautic.core.id{% endtrans %}</th>
+            <th>{% trans %}mautic.omnichannel.template.name{% endtrans %}</th>
+            <th>{% trans %}mautic.omnichannel.form.channel{% endtrans %}</th>
+            <th>{% trans %}mautic.omnichannel.form.language{% endtrans %}</th>
+            <th>{% trans %}mautic.omnichannel.template.status{% endtrans %}</th>
+            <th>{% trans %}mautic.core.form.published{% endtrans %}</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+            <tr>
+              <td>{{ item.id }}</td>
+              <td>
+                <a href="{{ path('mautic_omnichannel_templates_action', {objectAction: 'view', objectId: item.id}) }}">
+                  {{ item.name }}
+                </a>
+              </td>
+              <td>{{ item.channel }}</td>
+              <td>{{ item.language }}</td>
+              <td><span class="label label-default">{{ item.status }}</span></td>
+              <td>{% if item.isPublished %}<i class="ri-check-line text-success"></i>{% else %}<i class="ri-close-line text-danger"></i>{% endif %}</td>
+              <td class="text-right">
+                {% include '@MauticCore/Helper/table_actions.html.twig' with {
+                  'item': item,
+                  'templateButtons': {
+                    'edit': permissions['omnichannel:templates:edit']|default(false),
+                    'delete': permissions['omnichannel:templates:delete']|default(false)
+                  },
+                  'routeBase': 'mautic_omnichannel_templates',
+                  'langVar': 'omnichannel.template'
+                } %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+{% endblock %}

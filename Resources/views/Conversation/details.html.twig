@@ -1,0 +1,43 @@
+{% extends '@MauticCore/Default/content.html.twig' %}
+
+{% block headerTitle %}
+  {% trans %}mautic.omnichannel.conversations{% endtrans %} #{{ conversation.id }}
+{% endblock %}
+
+{% block content %}
+  <div class="pa-md">
+    <p>
+      <strong>{{ conversation.channel }}</strong> ·
+      {{ conversation.contactIdentifier }} ·
+      {{ conversation.status }} ·
+      {% if conversation.isWindowOpen %}
+        <span class="label label-success">Window OPEN{% if conversation.windowExpiresAt %} until {{ conversation.windowExpiresAt|date('Y-m-d H:i') }}{% endif %}</span>
+      {% else %}
+        <span class="label label-default">Window CLOSED</span>
+      {% endif %}
+      · {{ conversation.messageCount }} messages
+    </p>
+
+    <h3>Timeline</h3>
+    {% if messages is empty %}
+      <p class="text-muted"><em>No messages yet.</em></p>
+    {% else %}
+      <div class="omnichannel-timeline">
+        {% for m in messages %}
+          <div class="pa-sm mb-sm" style="border-left: 4px solid {% if m.inbound %}#2196F3{% else %}#4CAF50{% endif %};">
+            <strong>{% if m.inbound %}← IN{% else %}→ OUT{% endif %}</strong>
+            <small class="text-muted">{{ m.dateAdded ? m.dateAdded|date('Y-m-d H:i:s') : '' }}</small>
+            <em>{{ m.status }}</em>
+            {% if m.usedTemplate %}
+              <span class="label label-info">template: {{ m.templateName }}</span>
+            {% endif %}
+            {% if m.errorMessage %}
+              <span class="text-danger">{{ m.errorMessage }}</span>
+            {% endif %}
+            <div class="mt-xs">{{ m.body }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends '@MauticCore/Default/content.html.twig' %}
+
+{% block headerTitle %}
+  {% trans %}mautic.omnichannel.config{% endtrans %}: {{ channel|capitalize }}
+{% endblock %}
+
+{% block content %}
+  <div class="pa-md">
+    {{ form_start(form) }}
+    {% for field in form %}
+      {{ form_row(field) }}
+    {% endfor %}
+    <div class="mt-md">
+      <button type="submit" class="btn btn-primary">{% trans %}mautic.core.form.save{% endtrans %}</button>
+      <a href="{{ path('mautic_omnichannel_config_index') }}" class="btn btn-default">{% trans %}mautic.core.form.cancel{% endtrans %}</a>
+    </div>
+    {{ form_end(form) }}
+  </div>
+{% endblock %}
