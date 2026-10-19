@@ -1,6 +1,6 @@
 {
     "name": "wieslawgolec/plugin-omnichannel-messaging",
-    "description": "Omnichannel Messaging plugin for Mautic 7.2+ \u2014 WhatsApp, Telegram, WeCom, WeChat, Discord channels with templates, conversations, inbound webhooks, and campaign actions.",
+    "description": "Omnichannel Messaging plugin for Mautic 7.2+ \u2014 WhatsApp, Telegram, WeCom, WeChat, Discord, Facebook Messenger, Instagram, Twitch channels with templates, conversations, inbound webhooks, and campaign actions.",
     "type": "mautic-plugin",
     "license": "GPL-3.0-or-later",
     "keywords": [

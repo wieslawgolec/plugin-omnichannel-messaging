@@ -47,10 +47,24 @@ final class OmnichannelIntegrationTest extends TestCase
         self::assertArrayHasKey('wecom', $fields);
         self::assertArrayHasKey('wechat', $fields);
         self::assertArrayHasKey('discord', $fields);
+        self::assertArrayHasKey('messenger', $fields);
+        self::assertArrayHasKey('twitch', $fields);
+        self::assertArrayHasKey('instagram', $fields);
 
         $waKeys = array_column($fields['whatsapp'], 'key');
         self::assertContains('phone_number_id', $waKeys);
         self::assertContains('access_token', $waKeys);
+
+        $msKeys = array_column($fields['messenger'], 'key');
+        self::assertContains('page_access_token', $msKeys);
+
+        $twKeys = array_column($fields['twitch'], 'key');
+        self::assertContains('access_token', $twKeys);
+        self::assertContains('client_id', $twKeys);
+
+        $igKeys = array_column($fields['instagram'], 'key');
+        self::assertContains('ig_user_id', $igKeys);
+        self::assertContains('page_access_token', $igKeys);
     }
 
     public function testSetAllSettings(): void

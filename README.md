@@ -2,7 +2,7 @@
 
 Messaging channels for **Mautic 7.2+**.
 
-Turns WhatsApp, Telegram, WeCom, WeChat Official Account and Discord into proper messaging channels with:
+Turns WhatsApp, Telegram, WeCom, WeChat Official Account, Discord, Facebook Messenger, Instagram and Twitch into proper messaging channels with:
 
 - Session / customer-care window handling
 - Automatic free-form ↔ template fallback
@@ -46,6 +46,9 @@ Turns WhatsApp, Telegram, WeCom, WeChat Official Account and Discord into proper
 | **WeCom** (企业微信) | ✓ always | — | none | ✓ | ✓ | ✓ | ✓ |
 | **WeChat OA** | ✓ (inside window) | ✓ | 48 h | ✓ | ✓ | ✓ | ✓ |
 | **Discord** | ✓ always | — | none | — | ✓ | ✓ | ✓ |
+| **Facebook Messenger** | ✓ (inside window) | ✓ (tags / generic) | 24 h | ✓ | ✓ | ✓ | ✓ |
+| **Twitch** | ✓ always | — | none | ✓ | — | ✓ | ✓ |
+| **Instagram Messaging** | ✓ (inside window) | ✓ (tags / generic) | 24 h | ✓ | ✓ | ✓ | ✓ |
 
 Complementary to [plugin-social](https://github.com/wieslawgolec/plugin-social): Social = broadcast / publishing; Omnichannel = conversational messaging.
 
@@ -149,6 +152,9 @@ Menu entries appear under **Channels**.
 | WeCom | corpid, corpsecret, agentid |
 | WeChat | appid, appsecret, token |
 | Discord | webhook_url, bot_token, default_channel_id |
+| Messenger | page_id, page_access_token, verify_token, app_secret |
+| Twitch | access_token, client_id, broadcaster_id, sender_id |
+| Instagram | ig_user_id, page_access_token, verify_token, app_secret |
 
 `getCredentialsForChannel()` strips the `enabled` flag and is what `MessageSender` consumes.
 
@@ -160,7 +166,7 @@ Menu entries appear under **Channels**.
 
 | Field | Purpose |
 | --- | --- |
-| channel | whatsapp / telegram / wecom / wechat / discord |
+| channel | whatsapp / telegram / wecom / wechat / discord / messenger / twitch / instagram |
 | message | Free-form body (tokens supported) |
 | template_name | Used when the session window is closed |
 | language | Template language (default `en_US`) |
@@ -176,7 +182,9 @@ Menu entries appear under **Channels**.
 | --- | --- | --- |
 | WhatsApp | 24 h after last inbound | Templates only |
 | WeChat OA | 48 h after last inbound | Templates only |
-| Telegram / WeCom / Discord | none | Free-form always |
+| Telegram / WeCom / Discord / Twitch | none | Free-form always |
+| Facebook Messenger | 24 h after last inbound | Message tags / templates |
+| Instagram Messaging | 24 h after last inbound | Message tags / templates |
 
 ---
 
@@ -186,7 +194,7 @@ Menu entries appear under **Channels**.
 POST/GET /omnichannel/webhook/{channel}
 ```
 
-Supported: `whatsapp`, `telegram`, `wecom`, `wechat`.
+Supported: `whatsapp`, `telegram`, `wecom`, `wechat`, `messenger`, `twitch`, `instagram`.
 
 WhatsApp answers the Meta verification challenge. Parsed payload yields `contact_identifier`, `body`, `message_id`, optional `media`. The webhook controller is ready to call `ConversationModel::recordInbound()` once wired to Doctrine + contact resolution.
 
@@ -219,13 +227,3 @@ If this plugin saves you time:
 ## License
 
 GPL-3.0-or-later (same family as Mautic).
-
-
-## Production readiness (v1.2.0)
-
-- Doctrine `loadMetadata()` on all entities (ClassMetadataBuilder)
-- Repositories extend `CommonRepository`
-- Models inject repositories; in-memory fallback only for unit tests
-- Schema migration: `Migrations/Version20261019120000.php`
-- Permissions: `omnichannel:templates|conversations|config|messages` (standard CRUD)
-- Twig views under `Resources/views/` using `@MauticCore` layout

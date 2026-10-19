@@ -44,6 +44,27 @@ class OmnichannelIntegration
             'bot_token'          => '',
             'default_channel_id' => '',
         ],
+        'messenger' => [
+            'enabled'           => false,
+            'page_id'           => '',
+            'page_access_token' => '',
+            'verify_token'      => '',
+            'app_secret'        => '',
+        ],
+        'twitch' => [
+            'enabled'        => false,
+            'access_token'   => '',
+            'client_id'      => '',
+            'broadcaster_id' => '',
+            'sender_id'      => '',
+        ],
+        'instagram' => [
+            'enabled'           => false,
+            'ig_user_id'        => '',
+            'page_access_token' => '',
+            'verify_token'      => '',
+            'app_secret'        => '',
+        ],
     ];
 
     public function getName(): string
@@ -165,6 +186,27 @@ class OmnichannelIntegration
                 ['key' => 'webhook_url', 'label' => 'Webhook URL', 'type' => 'text'],
                 ['key' => 'bot_token', 'label' => 'Bot Token', 'type' => 'password'],
                 ['key' => 'default_channel_id', 'label' => 'Default Channel ID', 'type' => 'text'],
+            ],
+            'messenger' => [
+                ['key' => 'enabled', 'label' => 'Enabled', 'type' => 'bool'],
+                ['key' => 'page_id', 'label' => 'Page ID', 'type' => 'text'],
+                ['key' => 'page_access_token', 'label' => 'Page Access Token', 'type' => 'password', 'required' => true],
+                ['key' => 'verify_token', 'label' => 'Webhook Verify Token', 'type' => 'text'],
+                ['key' => 'app_secret', 'label' => 'App Secret', 'type' => 'password'],
+            ],
+            'twitch' => [
+                ['key' => 'enabled', 'label' => 'Enabled', 'type' => 'bool'],
+                ['key' => 'access_token', 'label' => 'OAuth Access Token', 'type' => 'password', 'required' => true],
+                ['key' => 'client_id', 'label' => 'Client ID', 'type' => 'text', 'required' => true],
+                ['key' => 'broadcaster_id', 'label' => 'Default Broadcaster ID', 'type' => 'text'],
+                ['key' => 'sender_id', 'label' => 'Sender User ID', 'type' => 'text'],
+            ],
+            'instagram' => [
+                ['key' => 'enabled', 'label' => 'Enabled', 'type' => 'bool'],
+                ['key' => 'ig_user_id', 'label' => 'Instagram Business Account ID', 'type' => 'text', 'required' => true],
+                ['key' => 'page_access_token', 'label' => 'Page Access Token', 'type' => 'password', 'required' => true],
+                ['key' => 'verify_token', 'label' => 'Webhook Verify Token', 'type' => 'text'],
+                ['key' => 'app_secret', 'label' => 'App Secret', 'type' => 'password'],
             ],
         ];
     }

@@ -19,6 +19,9 @@ final class ChannelRegistry
         $this->register(new WeComChannelHelper());
         $this->register(new WeChatChannelHelper());
         $this->register(new DiscordChannelHelper());
+        $this->register(new MessengerChannelHelper());
+        $this->register(new TwitchChannelHelper());
+        $this->register(new InstagramChannelHelper());
     }
 
     public function register(ChannelInterface $channel): void
