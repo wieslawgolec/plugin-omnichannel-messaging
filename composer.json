@@ -1,0 +1,48 @@
+{
+    "name": "wieslawgolec/plugin-omnichannel-messaging",
+    "description": "Omnichannel Messaging plugin for Mautic 7.2+ — first-class WhatsApp, Telegram, WeCom, WeChat, Discord channels with templates, conversations, inbound webhooks, and campaign actions.",
+    "type": "mautic-plugin",
+    "license": "GPL-3.0-or-later",
+    "keywords": [
+        "mautic",
+        "plugin",
+        "whatsapp",
+        "telegram",
+        "wecom",
+        "wechat",
+        "discord",
+        "omnichannel",
+        "messaging",
+        "mautic-7"
+    ],
+    "extra": {
+        "install-directory-name": "MauticOmnichannelMessagingBundle"
+    },
+    "require": {
+        "php": ">=8.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.5"
+    },
+    "suggest": {
+        "mautic/core-lib": "Required when installed inside Mautic 7.2+ (^7.0)"
+    },
+    "autoload": {
+        "psr-4": {
+            "MauticPlugin\\MauticOmnichannelMessagingBundle\\": ""
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "MauticPlugin\\MauticOmnichannelMessagingBundle\\Tests\\": "Tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit --configuration phpunit.xml.dist"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
